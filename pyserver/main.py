@@ -61,7 +61,7 @@ app.add_middleware(
 app.include_router(api_router)
 
 # Mount the static Vue frontend GUI
-client_dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "client", "dist"))
+client_dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "client_v2", "dist"))
 if os.path.exists(client_dist_dir):
     logger.info(f"Mounting static frontend from: {client_dist_dir}")
     app.mount("/", StaticFiles(directory=client_dist_dir, html=True), name="static")
