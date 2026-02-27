@@ -1,6 +1,7 @@
 "use strict";
 
-const { loadImage, createCanvas } = require("@napi-rs/canvas");
+const node_canvas = require("@napi-rs/canvas");
+const { loadImage, createCanvas } = node_canvas;
 const logger = require("./logger");
 const fs = require("fs");
 const path = require("path");
