@@ -1,0 +1,158 @@
+{
+   "orientation": "landscape",
+   "refresh": "update",
+   "screens": [
+      {
+         "id": 1,
+         "name": "System Resources",
+         "background": "#000000",
+         "duration": 10000,
+         "led_config": {
+            "theme": 3,
+            "intensity": 3,
+            "speed": 3
+         },
+         "widgets": [
+             {
+               "id": 1,
+               "group": 1,
+               "name": "text",
+               "font": "20px Arial",
+               "color": "#ffffff",
+               "align": "center",
+               "rect": { "x": 0, "y": 0, "width": 320, "height": 30 },
+               "sensor": false,
+               "value": "System Resources",
+               "format": "",
+               "refresh": 1000,
+               "debug_frame": false
+            },
+            {
+               "id": 2,
+               "group": 1,
+               "name": "progress_bar",
+               "color": "#00ff00",
+               "background_color": "#333333",
+               "vertical": false,
+               "rect": { "x": 80, "y": 50, "width": 220, "height": 30 },
+               "sensor": true,
+               "value": "cpu_usage",
+               "format": "{2}",
+               "refresh": 1000,
+               "debug_frame": false
+            },
+            {
+               "id": 3,
+               "group": 1,
+               "name": "text",
+               "font": "16px Arial",
+               "color": "#cccccc",
+               "align": "left",
+               "rect": { "x": 10, "y": 55, "width": 60, "height": 20 },
+               "sensor": true,
+               "value": "cpu_usage",
+               "format": "CPU: {2}%",
+               "refresh": 1000,
+               "debug_frame": false
+            },
+            {
+               "id": 4,
+               "group": 1,
+               "name": "progress_bar",
+               "color": "#0088ff",
+               "background_color": "#333333",
+               "vertical": false,
+               "rect": { "x": 80, "y": 100, "width": 220, "height": 30 },
+               "sensor": true,
+               "value": "memory",
+               "format": "{2}",
+               "refresh": 1000,
+               "debug_frame": false
+            },
+            {
+               "id": 5,
+               "group": 1,
+               "name": "text",
+               "font": "16px Arial",
+               "color": "#cccccc",
+               "align": "left",
+               "rect": { "x": 10, "y": 105, "width": 60, "height": 20 },
+               "sensor": true,
+               "value": "memory",
+               "format": "RAM: {2}%",
+               "refresh": 1000,
+               "debug_frame": false
+            }
+         ]
+      },
+      {
+         "id": 2,
+         "name": "System Info",
+         "background": "#000000",
+         "duration": 10000,
+         "led_config": {
+            "theme": 2,
+            "intensity": 3,
+            "speed": 3
+         },
+         "widgets": [
+            {
+               "id": 1,
+               "group": 1,
+               "name": "text",
+               "font": "20px Arial",
+               "color": "#ffffff",
+               "align": "center",
+               "rect": { "x": 0, "y": 10, "width": 320, "height": 30 },
+               "sensor": true,
+               "value": "system_info",
+               "format": "{0}",
+               "refresh": 5000,
+               "debug_frame": false
+            },
+            {
+               "id": 2,
+               "group": 1,
+               "name": "text",
+               "font": "16px Arial",
+               "color": "#aaaaaa",
+               "align": "center",
+               "rect": { "x": 0, "y": 50, "width": 320, "height": 20 },
+               "sensor": true,
+               "value": "system_info",
+               "format": "{1}",
+               "refresh": 5000,
+               "debug_frame": false
+            },
+            {
+               "id": 3,
+               "group": 1,
+               "name": "text",
+               "font": "18px Arial",
+               "color": "#00ffcc",
+               "align": "center",
+               "rect": { "x": 0, "y": 90, "width": 320, "height": 25 },
+               "sensor": true,
+               "value": "system_info",
+               "format": "Up: {2}",
+               "refresh": 1000,
+               "debug_frame": false
+            },
+            {
+               "id": 4,
+               "group": 1,
+               "name": "text",
+               "font": "16px Arial",
+               "color": "#ffaa00",
+               "align": "center",
+               "rect": { "x": 0, "y": 130, "width": 320, "height": 20 },
+               "sensor": true,
+               "value": "system_info",
+               "format": "Load: {3} / {4} / {5}",
+               "refresh": 2000,
+               "debug_frame": false
+            }
+         ]
+      }
+   ]
+}

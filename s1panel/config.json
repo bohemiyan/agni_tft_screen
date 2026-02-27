@@ -9,9 +9,16 @@
       {
          "name": "a simple demo portrait orientation",
          "config": "themes/simple_demo/portrait_simple.json"
+      },
+      {
+         "name": "Versatile Dashboard (Landscape)",
+         "config": "themes/versatile_dashboard/config.json"
       }
    ],
    "sensors": [
+      {
+         "module": "sensors/system_info.js"
+      },
       {
          "module": "sensors/clock.js"
       },
@@ -87,6 +94,7 @@
    "widgets": [
       "widgets/text.js",
       "widgets/custom_bar.js",
+      "widgets/progress_bar.js",
       "widgets/line_chart.js",
       "widgets/doughnut_chart.js",
       "widgets/bar_chart.js",
