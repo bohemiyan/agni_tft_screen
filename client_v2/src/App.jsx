@@ -30,7 +30,7 @@ function App() {
      let interval;
      const fetchCanvas = async () => {
         try {
-           const res = await fetch('http://localhost:8888/api/v1/hardware/lcd/screen');
+           const res = await fetch('/api/v1/hardware/lcd/screen');
            const blob = await res.blob();
            const arrayBuffer = await blob.arrayBuffer();
            const bytes = new Uint8Array(arrayBuffer);
