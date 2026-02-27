@@ -3,6 +3,7 @@ import logging
 import time
 from PIL import Image, ImageDraw
 from .core.hardware.lcd import LCDDevice
+from .core.hardware.led import LEDDevice
 from .core.config import Config
 from .sensors.cpu_usage import CPUUsageSensor
 from .sensors.cpu_temp import CPUTempSensor
@@ -29,6 +30,7 @@ class Worker:
         self.config = config
         self.registry = registry
         self.lcd = LCDDevice()
+        self.led = LEDDevice()
         self.running = False
         self.sensors = {}
         self.canvas = None
@@ -86,7 +88,7 @@ class Worker:
                 # 2. Clear Canvas
                 self.draw_context.rectangle(
                     [0, 0, self.canvas.width, self.canvas.height], 
-                    fill="black"
+                    fill="#060a10"
                 )
 
                 # 3. Handle rotation & Draw Widgets
@@ -105,6 +107,18 @@ class Worker:
                             if time.time() - self.last_rotate_time > rotation_interval:
                                 self.screen_index = (self.screen_index + 1) % len(screen_ids)
                                 self.last_rotate_time = time.time()
+                                
+                                # Send LED Updates periodically on screen rotation boundary
+                                led_cfg = self.config.get("led_config", {})
+                                if led_cfg:
+                                    asyncio.create_task(
+                                        self.led.set_strip(
+                                            led_cfg.get("theme", 5),
+                                            led_cfg.get("intensity", 3),
+                                            led_cfg.get("speed", 3),
+                                            led_cfg.get("device", "/dev/ttyUSB0")
+                                        )
+                                    )
                                 
                         if self.screen_index >= len(screen_ids):
                             self.screen_index = 0
@@ -128,7 +142,6 @@ class Worker:
                                             elif "rx_history" in reading: reading = reading["rx_history"]
                                             elif "temp" in reading: reading = reading["temp"]
                                             elif "watts" in reading: reading = reading["watts"]
-                                        w.draw(self.canvas, self.draw_context, reading, 0, 100)
                                         w.draw(self.canvas, self.draw_context, reading, 0, 100)
                 # 4. Update LCD
                 pixel_data = self.canvas.tobytes() 
