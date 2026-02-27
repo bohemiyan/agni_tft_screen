@@ -4,8 +4,8 @@
 install_if_missing() {
     if ! command -v "$1" &> /dev/null; then
         echo "$1 not found. Attempting to install..."
-        sudo apt-get update
-        sudo apt-get install -y "$2" || exit 1
+        apt-get update
+        apt-get install -y "$2" || exit 1
     else
         echo "$1 is already installed."
     fi
