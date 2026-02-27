@@ -63,6 +63,7 @@ class LEDDevice:
         self.device_path = path
         try:
             self.port = serial.Serial(self.device_path, 115200, timeout=1)
+            logger.info("led found")
             logger.info(f"Opened LED Serial: {self.device_path}")
         except Exception as e:
             logger.warning(f"Could not open LED Serial {self.device_path}: Is the USB plugged in?")

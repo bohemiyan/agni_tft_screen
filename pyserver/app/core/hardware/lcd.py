@@ -30,6 +30,7 @@ class LCDDevice:
         try:
             self.device = hid.device()
             self.device.open(self.vendor_id, self.product_id)
+            logger.info("lcd found")
             logger.info(f"Opened LCD device: {self.vendor_id}:{self.product_id}")
         except Exception as e:
             logger.error(f"Failed to open LCD device: {e}")
