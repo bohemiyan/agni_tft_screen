@@ -11,8 +11,8 @@ description: |
   - Configure settings through a built-in web GUI
   - Customize the LED strip per screen and theme
   - Create your own custom widgets and sensors for even more fun and flexibility
-issues: https://github.com/tjaworski/AceMagic-S1-LED-TFT-Linux/issues
-source-code: https://github.com/tjaworski/AceMagic-S1-LED-TFT-Linux/tree/main/s1panel
+
+
 
 confinement: strict
 compression: xz

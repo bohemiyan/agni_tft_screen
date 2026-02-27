@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node main.js",
     "dev": "nodemon main.js",
-    "build": "pkg main.js --targets node18-linux-x64",
+    "build": "pkg main.js --targets node18-linux-x64 --output s1panel-linux",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "GPL-3.0",
