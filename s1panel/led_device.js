@@ -56,21 +56,28 @@ function open_device(device) {
 
     return new Promise((fulfill, reject) => {
     
-        if (_port_cache) {
+        if (_port_cache && _port_cache.isOpen) {
             return fulfill(_port_cache);
         }
 
-        const _port = new SerialPort({ path: device, baudRate: 10000, autoOpen: false });
+        // Reset cache in case of a stale/closed port
+        _port_cache = null;
+
+        const _port = new SerialPort({ path: device, baudRate: 115200, autoOpen: false });
     
         _port.open(err => {
            
             if (err) {
-
-                console.log('led_device: error opening port ', err.message);        
+                console.log('led_device: error opening port ' + device + ' - ' + err.message);
+                console.log('led_device: check device exists with: ls -la /dev/ttyUSB*');
                 return reject();      
             }
           
             _port_cache = _port;
+
+            // Clear cache if port closes unexpectedly
+            _port.on('close', () => { _port_cache = null; });
+            _port.on('error', (e) => { console.log('led_device: port error: ' + e.message); _port_cache = null; });
 
             fulfill(_port);
         });
