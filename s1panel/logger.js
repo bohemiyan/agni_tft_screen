@@ -1,36 +1,34 @@
-'use strict';
+"use strict";
 /*!
  * s1panel - logger
  * Copyright (c) 2024-2025 Tomasz Jaworski
  * GPL-3 Licensed
  */
-const winston = require('winston');
+const winston = require("winston");
 
 const service = process.env.SERVICE || false;
 
-function as_service() {
+const as_service = () => {
+  console.log = function () {};
 
-    console.log = function () {};
-    
-    return winston.createLogger({
+  return winston.createLogger({
+    format: winston.format.combine(
+      winston.format.printf((i) => `[${i.level}] ${i.message}`),
+    ),
+    transports: [new winston.transports.Console()],
+  });
+};
 
-        format: winston.format.combine(winston.format.printf(i => `[${i.level}] ${i.message}`)),
-        transports: [new winston.transports.Console()],
-    });
-}
+const as_cmdline = () => {
+  return winston.createLogger({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.sss" }),
+      winston.format.printf((i) => `${i.timestamp} [${i.level}] ${i.message}`),
+    ),
 
-function as_cmdline() {
-
-    return winston.createLogger({
-
-        format: winston.format.combine(
-            
-            winston.format.colorize(), 
-            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.sss' }), 
-            winston.format.printf(i => `${i.timestamp} [${i.level}] ${i.message}`)),
-
-        transports: [new winston.transports.Console()],
-    });
-}
+    transports: [new winston.transports.Console()],
+  });
+};
 
 module.exports = service ? as_service() : as_cmdline();

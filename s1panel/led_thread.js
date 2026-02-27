@@ -1,46 +1,40 @@
-'use strict';
+"use strict";
 /*!
  * s1panel - led_thread
  * Copyright (c) 2024-2025 Tomasz Jaworski
  * GPL-3 Licensed
  */
-const threads     = require('worker_threads');
-const led         = require('./led_device');
-const logger      = require('./logger');
+const threads = require("worker_threads");
+const led = require("./led_device");
+const logger = require("./logger");
 
-threads.parentPort.on('message', message => {
+threads.parentPort.on("message", async (message) => {
+  switch (message.theme) {
+    case 1:
+      await led.set_rainbow(message.device, message.intensity, message.speed);
+      break;
 
-    var _promise = Promise.resolve();
+    case 2:
+      await led.set_breathing(message.device, message.intensity, message.speed);
+      break;
 
-    switch (message.theme) {
-        case 1:
-            _promise = led.set_rainbow(message.device, message.intensity, message.speed);
-            break;
+    case 3:
+      await led.set_color(message.device, message.intensity, message.speed);
+      break;
 
-        case 2:
-            _promise = led.set_breathing(message.device, message.intensity, message.speed);
-            break;
+    case 4:
+      await led.set_off(message.device);
+      break;
 
-        case 3:
-            _promise = led.set_color(message.device, message.intensity, message.speed);
-            break;
+    case 5:
+      await led.set_automatic(message.device, message.intensity, message.speed);
+      break;
 
-        case 4:
-            _promise = led.set_off(message.device);
-            break;
-
-        case 5:
-            _promise = led.set_automatic(message.device, message.intensity, message.speed);
-            break;
-
-        case 6:
-            // ignore
-            logger.info('led_thread: ignore');
-            _promise = Promise.resolve();
-            break;
-    }
-
-    return _promise;
+    case 6:
+      // ignore
+      logger.info("led_thread: ignore");
+      break;
+  }
 });
 
-logger.info('led_thread: started...');
+logger.info("led_thread: started...");
