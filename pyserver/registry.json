@@ -1,0 +1,296 @@
+{
+    "sensors": {
+        "s_cpu": {
+            "id": "s_cpu",
+            "type": "cpu_usage",
+            "name": "CPU Usage",
+            "config": {},
+            "protected": true
+        },
+        "s_temp": {
+            "id": "s_temp",
+            "type": "cpu_temp",
+            "name": "CPU Temp",
+            "config": {},
+            "protected": true
+        },
+        "s_pwr": {
+            "id": "s_pwr",
+            "type": "cpu_power",
+            "name": "CPU Power",
+            "config": {},
+            "protected": true
+        },
+        "s_mem": {
+            "id": "s_mem",
+            "type": "memory",
+            "name": "Memory",
+            "config": {},
+            "protected": true
+        },
+        "s_clk": {
+            "id": "s_clk",
+            "type": "clock",
+            "name": "Clock",
+            "config": {},
+            "protected": true
+        },
+        "s_cal": {
+            "id": "s_cal",
+            "type": "calendar",
+            "name": "Calendar",
+            "config": {},
+            "protected": true
+        },
+        "s_net": {
+            "id": "s_net",
+            "type": "network",
+            "name": "Network",
+            "config": {},
+            "protected": true
+        },
+        "s_spc": {
+            "id": "s_spc",
+            "type": "space",
+            "name": "Storage Space",
+            "config": {},
+            "protected": true
+        },
+        "s_wth": {
+            "id": "s_wth",
+            "type": "weather",
+            "name": "Weather",
+            "config": {},
+            "protected": true
+        }
+    },
+    "widgets": {
+        "w_clk": {
+            "id": "w_clk",
+            "type": "text",
+            "name": "Clock Text",
+            "sensor_id": "s_clk",
+            "rect": {
+                "x": 0,
+                "y": 3,
+                "width": 170,
+                "height": 14
+            },
+            "properties": {
+                "color": "#00d4ff",
+                "font": "bold 12px Arial",
+                "align": "center",
+                "format": "{1} {3}"
+            },
+            "protected": true
+        },
+        "w_cal": {
+            "id": "w_cal",
+            "type": "text",
+            "name": "Date Text",
+            "sensor_id": "s_cal",
+            "rect": {
+                "x": 0,
+                "y": 3,
+                "width": 170,
+                "height": 12
+            },
+            "properties": {
+                "color": "#4a6080",
+                "font": "10px Arial",
+                "align": "right",
+                "format": "{6} {9}/{2}/{10}"
+            },
+            "protected": true
+        },
+        "w_cpu_ring": {
+            "id": "w_cpu_ring",
+            "type": "doughnut_chart",
+            "name": "CPU Ring",
+            "sensor_id": "s_cpu",
+            "rect": {
+                "x": 10,
+                "y": 20,
+                "width": 80,
+                "height": 80
+            },
+            "properties": {
+                "used": "#00d4ff",
+                "free": "#0d1e2d",
+                "format": "{0}"
+            },
+            "protected": true
+        },
+        "w_cpu_text": {
+            "id": "w_cpu_text",
+            "type": "text",
+            "name": "CPU Text",
+            "sensor_id": "s_cpu",
+            "rect": {
+                "x": 10,
+                "y": 55,
+                "width": 80,
+                "height": 16
+            },
+            "properties": {
+                "color": "#00d4ff",
+                "font": "bold 14px Arial",
+                "align": "center",
+                "format": "{0}%"
+            },
+            "protected": true
+        },
+        "w_mem_ring": {
+            "id": "w_mem_ring",
+            "type": "doughnut_chart",
+            "name": "Memory Ring",
+            "sensor_id": "s_mem",
+            "rect": {
+                "x": 90,
+                "y": 20,
+                "width": 80,
+                "height": 80
+            },
+            "properties": {
+                "used": "#a855f7",
+                "free": "#1a0d2e",
+                "format": "{2}"
+            },
+            "protected": true
+        },
+        "w_mem_text": {
+            "id": "w_mem_text",
+            "type": "text",
+            "name": "Memory Text",
+            "sensor_id": "s_mem",
+            "rect": {
+                "x": 90,
+                "y": 55,
+                "width": 80,
+                "height": 16
+            },
+            "properties": {
+                "color": "#a855f7",
+                "font": "bold 14px Arial",
+                "align": "center",
+                "format": "{2}%"
+            },
+            "protected": true
+        },
+        "w_net_line": {
+            "id": "w_net_line",
+            "type": "line_chart",
+            "name": "Network Chart",
+            "sensor_id": "s_net",
+            "rect": {
+                "x": 0,
+                "y": 200,
+                "width": 170,
+                "height": 40
+            },
+            "properties": {
+                "outline": "#00d4ff"
+            },
+            "protected": true
+        },
+        "w_spc_bar": {
+            "id": "w_spc_bar",
+            "type": "bar_chart",
+            "name": "Storage Bar",
+            "sensor_id": "s_spc",
+            "rect": {
+                "x": 10,
+                "y": 150,
+                "width": 150,
+                "height": 20
+            },
+            "properties": {
+                "used": "#10b981"
+            },
+            "protected": true
+        }
+    },
+    "screens": {
+        "sc_sys": {
+            "id": "sc_sys",
+            "name": "System Status",
+            "background": "#060a10",
+            "widget_ids": [
+                "w_clk",
+                "w_cal",
+                "w_cpu_ring",
+                "w_cpu_text",
+                "w_mem_ring",
+                "w_mem_text"
+            ],
+            "protected": true
+        },
+        "sc_net": {
+            "id": "sc_net",
+            "name": "Network Charts",
+            "background": "#060a10",
+            "widget_ids": [
+                "w_clk",
+                "w_net_line"
+            ],
+            "protected": true
+        },
+        "sc_clk": {
+            "id": "sc_clk",
+            "name": "Clock Date",
+            "background": "#060a10",
+            "widget_ids": [
+                "w_clk",
+                "w_cal"
+            ],
+            "protected": true
+        },
+        "sc_sto": {
+            "id": "sc_sto",
+            "name": "Storage Power",
+            "background": "#060a10",
+            "widget_ids": [
+                "w_spc_bar"
+            ],
+            "protected": true
+        },
+        "sc_prf": {
+            "id": "sc_prf",
+            "name": "Performance Dashboard",
+            "background": "#060a10",
+            "widget_ids": [
+                "w_cpu_ring",
+                "w_mem_ring"
+            ],
+            "protected": true
+        },
+        "sc_zen": {
+            "id": "sc_zen",
+            "name": "Zen Weather Time",
+            "background": "#060a10",
+            "widget_ids": [
+                "w_clk"
+            ],
+            "protected": true
+        }
+    },
+    "themes": {
+        "th_agni": {
+            "id": "th_agni",
+            "name": "Agni Dark Modules",
+            "orientation": "portrait",
+            "refresh": "update",
+            "rotation_interval": 60000,
+            "screen_ids": [
+                "sc_sys",
+                "sc_net",
+                "sc_clk",
+                "sc_sto",
+                "sc_prf",
+                "sc_zen"
+            ],
+            "protected": true
+        }
+    },
+    "active_theme_id": "th_agni"
+}

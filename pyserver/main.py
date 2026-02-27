@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 from app.core.config import Config
+from app.core.registry import Registry
 from app.worker import Worker
 from app.api.main import api_router
 
@@ -32,7 +33,10 @@ async def lifespan(app: FastAPI):
         logger.warning(f"Could not load config from {config_path}: {e}")
         app.state.config = Config("server/config.json")
         
-    app.state.worker = Worker(app.state.config)
+    registry_path = os.path.join(os.path.dirname(config_path), 'registry.json')
+    app.state.registry = Registry(registry_path)
+        
+    app.state.worker = Worker(app.state.config, app.state.registry)
     
     worker_task = asyncio.create_task(app.state.worker.start())
     
@@ -68,4 +72,4 @@ else:
         return {"status": "ok", "service": "s1panel", "message": "GUI not built"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=1234)
+    uvicorn.run(app, host="0.0.0.0", port=8888)

@@ -25,8 +25,9 @@ from .widgets.weather_icon import WeatherIconWidget
 logger = logging.getLogger(__name__)
 
 class Worker:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, registry=None):
         self.config = config
+        self.registry = registry
         self.lcd = LCDDevice()
         self.running = False
         self.sensors = {}
@@ -88,50 +89,47 @@ class Worker:
                     fill="black"
                 )
 
-                # 3. Handle rotation
+                # 3. Handle rotation & Draw Widgets
+                theme_id = self.registry.active_theme_id if self.registry else None
                 rotation_interval = self.config.get("rotation_interval", 60000) / 1000.0
-                if rotation_interval > 0:
-                    if time.time() - self.last_rotate_time > rotation_interval:
-                        if self.config.theme and self.config.theme.screens:
-                            self.screen_index = (self.screen_index + 1) % len(self.config.theme.screens)
-                        self.last_rotate_time = time.time()
-
-                # 4. Draw Widgets
-                theme = self.config.theme
-                if theme and theme.screens:
-                    if self.screen_index >= len(theme.screens):
-                        self.screen_index = 0
-                    active_screen = theme.screens[self.screen_index]
-                    for widget_cfg in active_screen.widgets:
-                        w = self._get_widget(widget_cfg.name, widget_cfg.model_dump())
-                        if w:
-                            val_key = widget_cfg.value
-                            reading = readings.get(val_key, val_key)
+                
+                if theme_id and theme_id in self.registry.themes:
+                    # Modular flow
+                    theme_node = self.registry.themes[theme_id]
+                    if theme_node.rotation_interval:
+                        rotation_interval = theme_node.rotation_interval / 1000.0
+                        
+                    screen_ids = theme_node.screen_ids
+                    if screen_ids:
+                        if rotation_interval > 0:
+                            if time.time() - self.last_rotate_time > rotation_interval:
+                                self.screen_index = (self.screen_index + 1) % len(screen_ids)
+                                self.last_rotate_time = time.time()
+                                
+                        if self.screen_index >= len(screen_ids):
+                            self.screen_index = 0
                             
-                            # Extract specific field if reading is a dict
-                            if isinstance(reading, dict):
-                                if "used_percent" in reading:
-                                    reading = reading["used_percent"]
-                                elif "rx_history" in reading:
-                                    reading = reading["rx_history"]
-                                elif "temp" in reading:
-                                    # Provide node-js like string override if format specifies {0}
-                                    if widget_cfg.format and "{0}" in widget_cfg.format:
-                                        r_out = widget_cfg.format.replace("{0}", str(reading["temp"])).replace("{2}", str(reading["unit"])).replace("{1}", ",".join(map(str, reading.get("history", []))))
-                                        w.config["format"] = "{}" # blank it so python's format() isn't confused
-                                        reading = r_out
-                                    else:
-                                        reading = reading["temp"]
-                                elif "watts" in reading:
-                                    if widget_cfg.format and "{0}" in widget_cfg.format:
-                                        r_out = widget_cfg.format.replace("{0}", str(reading["watts"])).replace("{1}", ",".join(map(str, reading.get("history", []))))
-                                        w.config["format"] = "{}"
-                                        reading = r_out
-                                    else:
-                                        reading = reading["watts"]
-
-                            w.draw(self.canvas, self.draw_context, reading, 0, 100)
-
+                        active_screen_id = screen_ids[self.screen_index]
+                        if active_screen_id in self.registry.screens:
+                            active_screen = self.registry.screens[active_screen_id]
+                            for w_id in active_screen.widget_ids:
+                                if w_id in self.registry.widgets:
+                                    w_node = self.registry.widgets[w_id]
+                                    w = self._get_widget(w_node.type, {"id": w_node.id, **w_node.properties, "rect": w_node.rect})
+                                    if w:
+                                        reading = None
+                                        if w_node.sensor_id and w_node.sensor_id in self.registry.sensors:
+                                            s_node = self.registry.sensors[w_node.sensor_id]
+                                            reading = readings.get(s_node.type, None)  # Assume standard naming temp mappings
+                                        
+                                        # Simple fallback extraction logic
+                                        if isinstance(reading, dict):
+                                            if "used_percent" in reading: reading = reading["used_percent"]
+                                            elif "rx_history" in reading: reading = reading["rx_history"]
+                                            elif "temp" in reading: reading = reading["temp"]
+                                            elif "watts" in reading: reading = reading["watts"]
+                                        w.draw(self.canvas, self.draw_context, reading, 0, 100)
+                                        w.draw(self.canvas, self.draw_context, reading, 0, 100)
                 # 4. Update LCD
                 pixel_data = self.canvas.tobytes() 
                 await self.lcd.redraw(pixel_data)
