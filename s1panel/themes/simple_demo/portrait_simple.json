@@ -17,8 +17,8 @@
                "id": 1,
                "group": 1,
                "name": "doughnut_chart",
-               "used": "#00e600",
-               "free": "#4d4d4d",
+               "used": "#00d4ff",
+               "free": "#0d1e2d",
                "rect": {
                   "x": 35,
                   "y": 0,
@@ -36,7 +36,7 @@
                "group": 1,
                "name": "iconify",
                "value": "memory",
-               "color": "#878787",
+               "color": "#4a6080",
                "iconSet": "mdi",
                "rect": {
                   "x": 60,
@@ -52,8 +52,8 @@
                "id": 3,
                "group": 2,
                "name": "doughnut_chart",
-               "used": "#00e600",
-               "free": "#4d4d4d",
+               "used": "#00d4ff",
+               "free": "#0d1e2d",
                "rect": {
                   "x": 35,
                   "y": 102,
@@ -71,7 +71,7 @@
                "group": 2,
                "name": "iconify",
                "value": "temperature-lines",
-               "color": "#878787",
+               "color": "#4a6080",
                "iconSet": "mdi",
                "rect": {
                   "x": 60,
@@ -87,8 +87,8 @@
                "id": 5,
                "group": 3,
                "name": "doughnut_chart",
-               "used": "#00e600",
-               "free": "#4d4d4d",
+               "used": "#00d4ff",
+               "free": "#0d1e2d",
                "rect": {
                   "x": 35,
                   "y": 205,
@@ -106,7 +106,7 @@
                "group": 3,
                "name": "iconify",
                "value": "lightbulb",
-               "color": "#878787",
+               "color": "#4a6080",
                "iconSet": "mdi",
                "rect": {
                   "x": 60,
@@ -123,7 +123,7 @@
                "group": 1,
                "name": "text",
                "font": "17px Arial",
-               "color": "#878787",
+               "color": "#4a6080",
                "align": "center",
                "rect": {
                   "x": 65,
@@ -142,7 +142,7 @@
                "group": 2,
                "name": "text",
                "font": "17px Arial",
-               "color": "#878787",
+               "color": "#4a6080",
                "align": "center",
                "rect": {
                   "x": 62,
@@ -161,7 +161,7 @@
                "group": 3,
                "name": "text",
                "font": "17px Arial",
-               "color": "#878787",
+               "color": "#4a6080",
                "align": "center",
                "rect": {
                   "x": 59,
@@ -191,7 +191,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "13px Arial",
-               "color": "#47b320",
+               "color": "#10b981",
                "align": "left"
             },
             {
@@ -210,7 +210,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "13px Arial",
-               "color": "#47b320",
+               "color": "#10b981",
                "align": "right"
             },
             {
@@ -229,7 +229,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "10px Arial",
-               "color": "#47b320",
+               "color": "#10b981",
                "align": "center"
             }
          ]
@@ -255,8 +255,8 @@
                "format": "{1}",
                "refresh": 1000,
                "debug_frame": false,
-               "outline": "#88ff00",
-               "fill": "#80c72e",
+               "outline": "#00d4ff",
+               "fill": "#004466",
                "points": 60,
                "area": true
             },
@@ -276,7 +276,7 @@
                "refresh": 0,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -295,7 +295,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "right"
             },
             {
@@ -314,7 +314,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "outline": "#00ff00",
-               "fill": "#20bf2d",
+               "fill": "#076b46",
                "points": 16,
                "thickness": 8,
                "zoom": 17
@@ -335,7 +335,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -354,7 +354,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "right"
             },
             {
@@ -417,7 +417,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "11px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -436,7 +436,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "10px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -455,7 +455,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "10px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -474,7 +474,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "11px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -535,7 +535,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -554,7 +554,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "right"
             },
             {
@@ -572,8 +572,8 @@
                "format": "{5}",
                "refresh": 1000,
                "debug_frame": false,
-               "outline": "#3db2c4",
-               "fill": "#26cccc",
+               "outline": "#7c3aed",
+               "fill": "#a855f7",
                "points": 60,
                "area": true
             },
@@ -615,7 +615,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "left"
             },
             {
@@ -634,7 +634,7 @@
                "refresh": 1000,
                "debug_frame": false,
                "font": "12px Arial",
-               "color": "#26ff00",
+               "color": "#00d4ff",
                "align": "right"
             }
          ],

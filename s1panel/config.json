@@ -1,13 +1,17 @@
 {
    "listen": "0.0.0.0:1234",
-   "theme": "themes/simple_demo/portrait_simple.json",
-   "poll": 500,
+   "theme": "themes/agni_dark/agni_dark.json",
+   "poll": 300,
    "refresh": 1600,
    "heartbeat": 60000,
    "debug_update": false,
    "theme_list": [
       {
-         "name": "a simple demo portrait orientation",
+         "name": "Agni Dark — Cyberpunk",
+         "config": "themes/agni_dark/agni_dark.json"
+      },
+      {
+         "name": "Simple Demo (Portrait)",
          "config": "themes/simple_demo/portrait_simple.json"
       }
    ],
@@ -102,7 +106,7 @@
    "device": "1-8:1.1",
    "led_config": {
       "device": "/dev/ttyUSB0",
-      "theme": 2,
+      "theme": 5,
       "speed": 3,
       "intensity": 3
    },
