@@ -4,8 +4,8 @@
 install_if_missing() {
     if ! command -v "$1" &> /dev/null; then
         echo "$1 not found. Attempting to install..."
-        apt-get update
-        apt-get install -y "$2" || exit 1
+        sudo apt-get update
+        sudo apt-get install -y "$2" || exit 1
     else
         echo "$1 is already installed."
     fi
@@ -15,21 +15,18 @@ install_if_missing() {
 install_if_missing "node" "nodejs"
 install_if_missing "npm" "npm"
 install_if_missing "python3" "python3"
+install_if_missing "pip" "python3-pip"
+install_if_missing "python3-venv" "python3-venv"
 install_if_missing "make" "build-essential"
 
-# Navigate to s1panel directory
-cd "$(dirname "$0")/s1panel" || exit 1
-
-# Check for node_modules
-if [ ! -d "node_modules" ]; then
-    echo "Installing application dependencies..."
-    npm install || exit 1
-fi
+# Navigate to application root
+BASE_DIR="$(dirname "$0")"
+cd "$BASE_DIR" || exit 1
 
 # Check for built GUI
-if [ ! -d "gui/dist" ]; then
+if [ ! -d "client/dist" ]; then
     echo "GUI build not found. Building GUI..."
-    cd gui || exit 1
+    cd client || exit 1
     if [ ! -d "node_modules" ]; then
         echo "Installing GUI dependencies..."
         npm install || exit 1
@@ -38,6 +35,17 @@ if [ ! -d "gui/dist" ]; then
     cd ..
 fi
 
+echo "Setting up Python backend..."
+cd pyserver || exit 1
+
+# Check for python venv
+if [ ! -d "venv" ]; then
+    echo "Creating Python virtual environment..."
+    python3 -m venv venv || exit 1
+    echo "Installing Python dependencies..."
+    ./venv/bin/pip install -r requirements.txt || exit 1
+fi
+
 # Start the application
-echo "Starting s1panel on port 1234..."
-node main.js
+echo "Starting s1panel Python backend on port 1234..."
+./venv/bin/python main.py

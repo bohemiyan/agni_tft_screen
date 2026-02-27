@@ -695,11 +695,12 @@
           <div class="card-body">
             <div class="field-row">
               <label class="field-label">Theme</label>
-              <div class="field-value">
+              <div class="field-value flex gap-2" style="align-items: center">
                 <select
                   class="ctrl"
                   v-model="edit_theme"
                   @change="onThemeChange"
+                  style="flex: 1"
                 >
                   <option
                     v-for="t in config?.theme_list"
@@ -709,6 +710,13 @@
                     {{ t.name }}
                   </option>
                 </select>
+                <button
+                  class="btn btn-ghost btn-sm btn-icon"
+                  @click="onCreateTheme"
+                  title="Create New Theme"
+                >
+                  <i class="pi pi-plus"></i>
+                </button>
               </div>
             </div>
             <div class="field-row">
@@ -802,14 +810,14 @@
               </div>
             </div>
             <div class="field-row">
-              <label class="field-label">Duration</label>
+              <label class="field-label" title="Global Rotation Mode">Rotation</label>
               <div class="field-value flex gap-2" style="align-items: center">
                 <input
                   class="ctrl ctrl-num"
                   type="number"
                   v-model.number="edit_duration"
                   min="0"
-                  @input="onSetScreenDuration"
+                  @change="onSetScreenDuration"
                 />
                 <span class="text-muted" style="font-size: 12px">ms</span>
               </div>
