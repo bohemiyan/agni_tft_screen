@@ -4,12 +4,13 @@
  * Copyright (c) 2024-2025 Tomasz Jaworski
  * GPL-3 Licensed
  */
-const node_canvas = require('canvas');
-const logger      = require('./logger');
-const fs          = require('fs');
-const path        = require('path');
-const multer      = require('multer');
-const upload      = multer();
+const { loadImage, createCanvas } = require('@napi-rs/canvas');
+const logger         = require('./logger');
+const fs             = require('fs');
+const path           = require('path');
+const multer         = require('multer');
+const upload         = multer();
+const screens_mgr    = require('./screens_manager');
 
 const service = process.env.SERVICE || false;
 const home_dir = process.env.S1PANEL_CONFIG || __dirname;
@@ -1361,6 +1362,70 @@ module.exports.init = function(web, context) {
         }
     });
 
-    web.post('/api/upload_image', upload.any(), (req, res) => upload_image(context, req, res));    
-    web.post('/api/upload_wallpaper', upload.any(), (req, res) => upload_wallpaper(context, req, res));    
+    web.post('/api/upload_image', upload.any(), (req, res) => upload_image(context, req, res));
+    web.post('/api/upload_wallpaper', upload.any(), (req, res) => upload_wallpaper(context, req, res));
+
+    // ── Screen Management ────────────────────────────────────────────
+
+    // List all screens (system + user)
+    web.get('/api/screens', (req, res) => {
+        screens_mgr.list_screens().then(list => res.json(list)).catch(err => res.status(500).json({ error: String(err) }));
+    });
+
+    // Get one screen
+    web.get('/api/screens/:id', (req, res) => {
+        screens_mgr.load_screen(req.params.id)
+            .then(data => res.json(data))
+            .catch(() => res.status(404).json({ error: 'Screen not found' }));
+    });
+
+    // Create a new user screen
+    web.post('/api/screens', (req, res) => {
+        const _data = req.body || {};
+        if (!_data.name) return res.status(400).json({ error: 'name is required' });
+        _data.widgets = _data.widgets || [];
+        _data.background = _data.background || '#060a10';
+        screens_mgr.create_screen(_data)
+            .then(id => res.json({ id }))
+            .catch(err => res.status(err.code || 500).json({ error: err.message || String(err) }));
+    });
+
+    // Update a user screen (blocks system screens)
+    web.put('/api/screens/:id', (req, res) => {
+        screens_mgr.save_screen(req.params.id, req.body)
+            .then(() => res.json({ ok: true }))
+            .catch(err => res.status(err.code || 500).json({ error: err.message || String(err) }));
+    });
+
+    // Delete a user screen (blocks system screens)
+    web.delete('/api/screens/:id', (req, res) => {
+        screens_mgr.delete_screen(req.params.id)
+            .then(() => res.json({ ok: true }))
+            .catch(err => res.status(err.code || 500).json({ error: err.message || String(err) }));
+    });
+
+    // Update the active theme's screen rotation config
+    web.put('/api/theme/screens', (req, res) => {
+        const { active_screens, rotate, rotation_interval } = req.body;
+        const _theme = context.theme;
+        const _state = context.state;
+
+        if (!Array.isArray(active_screens)) {
+            return res.status(400).json({ error: 'active_screens must be an array' });
+        }
+
+        // Force system_status to always be first
+        const _ids = ['system_status', ...active_screens.filter(id => id !== 'system_status')];
+
+        _theme.active_screens   = _ids;
+        _theme.rotate           = rotate !== false;
+        _theme.rotation_interval = Number(rotation_interval) || 60000;
+
+        // Reload resolved screens
+        screens_mgr.resolve_theme_screens(_theme).then(screens => {
+            _theme.screens = screens;
+            _state.force_redraw(_state);
+            res.json({ ok: true, active_screens: _ids });
+        }).catch(err => res.status(500).json({ error: String(err) }));
+    });
 };

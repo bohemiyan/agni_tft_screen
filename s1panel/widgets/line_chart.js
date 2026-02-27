@@ -1,13 +1,9 @@
 'use strict';
 /*!
- * s1panel - widget/line_chart
+ * s1panel - widget/line_chart (native canvas, zero deps)
  * Copyright (c) 2024-2025 Tomasz Jaworski
  * GPL-3 Licensed
  */
-const logger = require('../logger');
-
-const { loadImage }         = require('canvas');
-const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 
 function start_draw(context, rect) {
     context.save();
@@ -17,36 +13,13 @@ function start_draw(context, rect) {
 }
 
 function debug_rect(context, rect) {
-
     context.lineWidth = 1;
-    context.strokeStyle = "red";
-    context.rect(rect.x, rect.y, rect.width, rect.height);
-    context.stroke();
-}
-
-function draw_chart(context, x, y, w, h, chart, config) {
-
-    return new Promise((fulfill, reject) => {
-
-        chart.renderToBuffer(config).then(buffer => {
-            
-            loadImage(buffer).then(image => {
-
-                context.drawImage(image, 0, 0, w, h, x, y, w, h);
-        
-                fulfill();
-
-            }, reject);
-        
-        }, reject);
-    });
+    context.strokeStyle = 'red';
+    context.strokeRect(rect.x, rect.y, rect.width, rect.height);
 }
 
 function get_private(config) {
-
-    if (!config._private) {
-        config._private = {};
-    }
+    if (!config._private) config._private = {};
     return config._private;
 }
 
@@ -55,138 +28,69 @@ function draw(context, value, min, max, config) {
     return new Promise(fulfill => {
 
         const _private = get_private(config);
-        const _rect = config.rect;
-        const _data = value.split(',');
-        var _has_changed = false;
-        const _points = new Array(config.points);
-        const _labels = new Array(config.points);
-        var _max_points = Math.min(config.points, _data.length); 
+        const _rect    = config.rect;
 
-        var _count = 0;
-        for (var i = _data.length - _max_points; i < _data.length; i++) {    
+        const _raw   = value.split(',').map(Number);
+        const _count = Math.min(config.points || 60, _raw.length);
+        const _data  = _raw.slice(_raw.length - _count);
 
-            _points[_count] = _data[i]; // y axis
-            _labels[_count] = _count;   // x axis
+        const _has_changed = (_private.last_value !== value);
 
-            if (!_has_changed) {
+        const _data_min = min ?? 0;
+        const _data_max = max && max > 0 ? max : Math.max(..._data, 1);
+        const _range    = _data_max - _data_min || 1;
 
-                if (!_private.last_value) {
-                    _has_changed = true;
-                } 
-                else if (_data[i] != _private.last_value[i]) {
-                    _has_changed = true;
-                }
-            }
-            _count++;        
-        }
-
-        const _configuration = {
-
-            type: 'line',
-            data: {
-                labels: _labels,
-                datasets: [{
-                    label           : '',
-                    data            : _points,
-                    fill            : config.area || false,
-                    pointStyle      : 'circle',
-                    backgroundColor : config.fill || '#00e600',
-                    borderColor     : config.outline || '#4d4d4d', 
-                    tension         : 0.1
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                      display: false
-                    }
-                },
-                responsive: true,
-                layout: { 
-                    padding: { 
-                        bottom: 0,
-                        top: 0,
-                        right: 0,
-                        left: 0
-                    } 
-                },
-                scales: {
-                    x: {
-                        type        : 'linear',
-                        min         : 0,
-                        max         : _points.length,
-                        display     : false
-                    },
-                    y: {
-                        type        : 'linear',
-                        min         : min,
-                        max         : max,
-                        display     : false,
-                        beginAtZero : true,
-                        border: {
-                            display : false
-                        }
-                    }
-                },
-                legend: {
-                    display: false
-                },
-                elements: {
-                    point: {
-                        radius: 0
-                    }
-                }
-            }
-        };
-
-        if (!_private.chart || _private.chart._width != _rect.width || _private.chart._height != _rect.height) {
-
-            if (_private.chart) {
-
-                delete _private.chart;
-            }
-            _private.chart = new ChartJSNodeCanvas({ width: _rect.width, height: _rect.height });
-        }
+        const scaleX = i  => _rect.x + (i / (_data.length - 1)) * _rect.width;
+        const scaleY = v  => _rect.y + _rect.height - ((v - _data_min) / _range) * _rect.height;
 
         start_draw(context, _rect);
 
-        draw_chart(context, _rect.x, _rect.y, _rect.width, _rect.height, _private.chart, _configuration).then(() => {
+        // fill area beneath line
+        if (config.area) {
+            context.beginPath();
+            _data.forEach((v, i) => {
+                const x = scaleX(i), y = scaleY(v);
+                i === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
+            });
+            context.lineTo(scaleX(_data.length - 1), _rect.y + _rect.height);
+            context.lineTo(scaleX(0), _rect.y + _rect.height);
+            context.closePath();
+            context.fillStyle = config.fill || 'rgba(0,212,255,0.15)';
+            context.fill();
+        }
 
-            if (_has_changed) {
+        // draw the line
+        context.beginPath();
+        _data.forEach((v, i) => {
+            const x = scaleX(i), y = scaleY(v);
+            i === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
+        });
+        context.strokeStyle = config.outline || '#00d4ff';
+        context.lineWidth   = config.line_width || 1.5;
+        context.lineJoin    = 'round';
+        context.stroke();
 
-                _private.last_value = value;
-            }
+        if (config.debug_frame) debug_rect(context, _rect);
+        context.restore();
 
-        }, () => {
+        if (_has_changed) _private.last_value = value;
 
-            logger.error('line chart failed to draw');
-
-        }).finally(() => {
-
-            if (config.debug_frame) {                
-                debug_rect(context, _rect);
-            }
-            
-            context.restore();
-
-            fulfill(_has_changed);
-        });       
-    }); 
+        fulfill(_has_changed);
+    });
 }
 
 function info() {
     return {
         name: 'line_chart',
-        description: 'A line chart',
-        fields: [ 
-            { name: 'outline', value: 'color' }, 
-            { name: 'fill', value: 'color' }, 
-            { name: 'points', value: 'number' }, 
-            { name: 'area', value: 'boolean' } ]
+        description: 'A smooth line/area chart (native canvas)',
+        fields: [
+            { name: 'outline',    value: 'color'   },
+            { name: 'fill',       value: 'color'   },
+            { name: 'points',     value: 'number'  },
+            { name: 'area',       value: 'boolean' },
+            { name: 'line_width', value: 'number'  },
+        ]
     };
 }
 
-module.exports = {
-    info,
-    draw
-};
+module.exports = { info, draw };

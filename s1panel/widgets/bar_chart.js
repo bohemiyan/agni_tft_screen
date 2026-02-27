@@ -1,15 +1,9 @@
 'use strict';
 /*!
- * s1panel - widget/bar_chart
+ * s1panel - widget/bar_chart (native canvas, zero deps)
  * Copyright (c) 2024-2025 Tomasz Jaworski
  * GPL-3 Licensed
  */
-const logger = require('../logger');
-
-const { loadImage }         = require('canvas');
-const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
-
-const DEFAULT_ZOOM = 0;
 
 function start_draw(context, rect) {
     context.save();
@@ -19,186 +13,100 @@ function start_draw(context, rect) {
 }
 
 function debug_rect(context, rect) {
-
     context.lineWidth = 1;
-    context.strokeStyle = "red";
-    context.rect(rect.x, rect.y, rect.width, rect.height);
-    context.stroke();
-}
-
-function draw_chart(context, x, y, w, h, zoom, chart, config) {
-
-    return new Promise((fulfill, reject) => {
-
-        chart.renderToBuffer(config).then(buffer => {
-            
-            loadImage(buffer).then(image => {
-
-                const _zoom = zoom / 2;
-
-                context.drawImage(image, _zoom, 0, w - _zoom, h, x, y, w, h);
-        
-                fulfill();
-
-            }, reject);
-        
-        }, reject);
-    });
+    context.strokeStyle = 'red';
+    context.strokeRect(rect.x, rect.y, rect.width, rect.height);
 }
 
 function get_private(config) {
-
-    if (!config._private) {
-        config._private = {};
-    }
+    if (!config._private) config._private = {};
     return config._private;
 }
 
 function draw(context, value, min, max, config) {
 
-    return new Promise((fulfill, reject) => {
+    return new Promise(fulfill => {
 
-        const _private = get_private(config);
-        const _rect = config.rect;
+        const _private   = get_private(config);
+        const _rect      = config.rect;
+        const _horizontal = config.horizontal || false;
 
-        const _data = value.split(',');
+        const _raw   = value.split(',').map(Number);
+        const _pts   = config.points || 16;
+        const _data  = _raw.slice(Math.max(0, _raw.length - _pts));
 
-        var _has_changed = false;
+        const _has_changed = (_private.last_value !== value);
 
-        const _zoom = (config.zoom || DEFAULT_ZOOM) * 2;
-        const _points = new Array(config.points);
-        const _labels = new Array(config.points);
-        var _max_points = Math.min(config.points, _data.length); 
-        
-        var _count = 0;
-        for (var i = _data.length - _max_points; i < _data.length; i++) {    
+        const _data_max = max && max > 0 ? max : Math.max(..._data, 1);
+        const _data_min = min ?? 0;
+        const _range    = _data_max - _data_min || 1;
 
-            _points[_count] = _data[i]; // y axis
-            _labels[_count] = _count;   // x axis
-
-            if (!_has_changed) {
-
-                if (!_private.last_value) {
-                    _has_changed = true;
-                } 
-                else if (_data[i] != _private.last_value[i]) {
-                    _has_changed = true;
-                }
-            }
-            _count++;        
-        }
-
-        const _x_axis = {
-            type        : 'linear',
-            min         : 0,
-            max         : _points.length,
-            display     : false
-        };
-
-        const _y_axis = {
-            type        : 'linear',
-            min         : min,
-            max         : max,
-            display     : false,
-            beginAtZero : true,
-            border: {
-                display : false
-            }
-        };
-
-        const _configuration = {
-
-            type: 'bar',
-            data: {
-                labels: _labels,
-                datasets: [{
-                    label           : '',
-                    data            : _points,
-                    backgroundColor : config.fill || '#00e600',
-                    borderColor     : config.outline || '#4d4d4d', 
-                    borderWidth     : 1,
-                    barThickness    : config.thickness || 1
-                }]
-            },
-            options: {
-                indexAxis: config.horizontal ? 'y' : 'x',
-                plugins: {
-                    legend: {
-                      display: false
-                    }
-                },
-                responsive: true,
-                layout: { 
-                    padding: { 
-                        bottom: 0,
-                        top: 0,
-                        right: 0,
-                        left: 0
-                    } 
-                },
-                scales: {
-                    x: config.horizontal ? _y_axis : _x_axis,
-                    y: config.horizontal ? _x_axis : _y_axis,
-                },
-                legend: {
-                    display: false
-                },
-                elements: {
-                    point: {
-                        radius: 0
-                    }
-                }
-            }
-        };
-
-        if (!_private.chart || _private.chart._width != (_rect.width + _zoom) || _private.chart._height != _rect.height) {
-
-            if (_private.chart) {
-                delete _private.chart;
-            }
-            _private.chart = new ChartJSNodeCanvas({ width: _rect.width + _zoom, height: _rect.height });
-        }
+        const _fill    = config.fill    || '#0077aa';
+        const _outline = config.outline || '#00d4ff';
 
         start_draw(context, _rect);
 
-        draw_chart(context, _rect.x, _rect.y, _rect.width + _zoom, _rect.height, _zoom, _private.chart, _configuration).then(() => {
+        if (_horizontal) {
+            // Single horizontal progress bar (points=1 mode)
+            const _val = _data[_data.length - 1] ?? 0;
+            const _pct = Math.max(0, Math.min(1, (_val - _data_min) / _range));
+            const _fw  = _rect.width * _pct;
 
-            if (_has_changed) {
-                _private.last_value = value;
+            // background track
+            context.fillStyle = 'rgba(255,255,255,0.05)';
+            context.fillRect(_rect.x, _rect.y, _rect.width, _rect.height);
+
+            // filled portion with gradient
+            if (_fw > 0) {
+                const _grad = context.createLinearGradient(_rect.x, 0, _rect.x + _fw, 0);
+                _grad.addColorStop(0, _outline);
+                _grad.addColorStop(1, _fill);
+                context.fillStyle = _grad;
+                context.fillRect(_rect.x, _rect.y, _fw, _rect.height);
             }
+        }
+        else {
+            // Vertical bar histogram
+            const _bar_gap  = config.gap ?? 1;
+            const _total_w  = _rect.width;
+            const _bar_w    = Math.max(1, Math.floor((_total_w - (_data.length - 1) * _bar_gap) / _data.length));
 
-        }, () => {
+            _data.forEach((v, i) => {
+                const _pct = Math.max(0, Math.min(1, (v - _data_min) / _range));
+                const _bh  = Math.round(_pct * _rect.height);
+                const _bx  = _rect.x + i * (_bar_w + _bar_gap);
+                const _by  = _rect.y + _rect.height - _bh;
 
-            logger.error('bar chart failed to draw');
+                // gradient per bar
+                const _grad = context.createLinearGradient(_bx, _by, _bx, _by + _bh);
+                _grad.addColorStop(0, _outline);
+                _grad.addColorStop(1, _fill);
+                context.fillStyle = _grad;
+                context.fillRect(_bx, _by, _bar_w, _bh);
+            });
+        }
 
-        }).finally(() => {
+        if (config.debug_frame) debug_rect(context, _rect);
+        context.restore();
 
-            if (config.debug_frame) {
-                debug_rect(context, _rect);
-            }
-            
-            context.restore();
+        if (_has_changed) _private.last_value = value;
 
-            fulfill(_has_changed);
-        });       
-    }); 
+        fulfill(_has_changed);
+    });
 }
 
 function info() {
     return {
         name: 'bar_chart',
-        description: 'A bar chart',
-        fields: [ 
-            { name: 'outline', value: 'color' }, 
-            { name: 'fill', value: 'color' }, 
-            { name: 'points', value: 'number' },
-            { name: 'thickness', value: 'number' },
-            { name: 'zoom', value: 'number'},
-            { name: 'horizontal', value: 'boolean' } ]
+        description: 'A bar chart (native canvas)',
+        fields: [
+            { name: 'outline',    value: 'color'   },
+            { name: 'fill',       value: 'color'   },
+            { name: 'points',     value: 'number'  },
+            { name: 'horizontal', value: 'boolean' },
+            { name: 'gap',        value: 'number'  },
+        ]
     };
 }
 
-module.exports = {
-    info,
-    draw
-};
+module.exports = { info, draw };

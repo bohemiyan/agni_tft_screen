@@ -4,7 +4,7 @@
  * Copyright (c) 2024-2025 Tomasz Jaworski
  * GPL-3 Licensed
  */
-const node_canvas = require('canvas');
+const node_canvas = require('@napi-rs/canvas');
 const logger = require('../logger');
 
 const wmo_weather_icons = {

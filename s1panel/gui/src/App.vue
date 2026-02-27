@@ -766,32 +766,192 @@
 
       <!-- ── SCREENS TAB ─────────────────────────────────────── -->
       <div v-if="activeTab === 'screens'" class="tab-content">
-        <div class="section-header mb-3">
-          <div class="section-title">Screens</div>
-          <button class="btn btn-ghost btn-sm" @click="onOpenScreenManage">
-            <i class="pi pi-cog"></i> Manage
-          </button>
-        </div>
-
-        <!-- Screen Selector -->
+        <!-- Screen Rotation Config -->
         <div class="card mb-3">
+          <div class="card-header">
+            <span>Screen Rotation</span>
+            <button
+              class="btn btn-success btn-sm"
+              @click="onSaveScreenRotation"
+              :disabled="screen_cfg.saving"
+            >
+              <i class="pi pi-save"></i> Save
+            </button>
+          </div>
           <div class="card-body">
-            <div class="field-row">
-              <label class="field-label">Active Screen</label>
+            <!-- Rotate toggle -->
+            <div class="field-row mb-3">
+              <label class="field-label">Mode</label>
               <div class="field-value">
-                <select
-                  class="ctrl"
-                  v-model="edit_screen"
-                  @change="onScreenChange"
-                >
-                  <option v-for="s in theme?.screens" :key="s.id" :value="s.id">
-                    {{ s.name }}
-                  </option>
-                </select>
+                <div class="flex gap-3" style="align-items: center">
+                  <label
+                    class="toggle-opt"
+                    :class="{ active: !screen_cfg.rotate }"
+                    @click="screen_cfg.rotate = false"
+                  >
+                    <i class="pi pi-stop-circle"></i> Single Screen
+                  </label>
+                  <label
+                    class="toggle-opt"
+                    :class="{ active: screen_cfg.rotate }"
+                    @click="screen_cfg.rotate = true"
+                  >
+                    <i class="pi pi-sync"></i> Rotate
+                  </label>
+                </div>
               </div>
             </div>
+            <!-- Interval (only when rotating) -->
+            <div class="field-row mb-3" v-if="screen_cfg.rotate">
+              <label class="field-label">Interval</label>
+              <div class="field-value flex gap-2" style="align-items: center">
+                <input
+                  class="ctrl ctrl-num"
+                  type="number"
+                  v-model.number="screen_cfg.interval_sec"
+                  min="5"
+                  max="600"
+                  style="width: 70px"
+                />
+                <span class="text-muted" style="font-size: 12px">seconds</span>
+              </div>
+            </div>
+            <!-- Screen checklist -->
+            <div
+              class="section-title mb-2"
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              "
+            >
+              Active Screens
+            </div>
+            <div class="screen-checklist">
+              <div
+                v-for="s in screen_cfg.all_screens"
+                :key="s.id"
+                class="screen-check-row"
+                :class="{ locked: s.id === 'system_status' }"
+              >
+                <input
+                  type="checkbox"
+                  :id="'scr_' + s.id"
+                  :checked="screen_cfg.active.includes(s.id)"
+                  :disabled="s.id === 'system_status'"
+                  @change="onToggleScreenActive(s.id, $event.target.checked)"
+                />
+                <label :for="'scr_' + s.id" class="screen-check-label">
+                  <span class="badge-lock" v-if="s.system">🔒</span>
+                  <span class="badge-user" v-else>👤</span>
+                  {{ s.name }}
+                  <span
+                    v-if="s.id === 'system_status'"
+                    class="text-muted"
+                    style="font-size: 10px"
+                    >(always fixed)</span
+                  >
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen Library -->
+        <div class="card">
+          <div class="card-header">
+            <span>Screen Library</span>
+            <button
+              class="btn btn-success btn-sm"
+              @click="screen_cfg.show_new = true"
+            >
+              <i class="pi pi-plus"></i> New Screen
+            </button>
+          </div>
+
+          <!-- New screen form -->
+          <div
+            v-if="screen_cfg.show_new"
+            class="card-body"
+            style="border-bottom: 1px solid var(--border)"
+          >
+            <div class="flex gap-2">
+              <input
+                class="ctrl"
+                v-model="screen_cfg.new_name"
+                placeholder="Screen name…"
+                @keyup.enter="onCreateScreen"
+              />
+              <input
+                class="ctrl ctrl-color"
+                type="color"
+                v-model="screen_cfg.new_bg"
+                title="Background color"
+              />
+              <button
+                class="btn btn-primary btn-sm"
+                :disabled="!screen_cfg.new_name"
+                @click="onCreateScreen"
+              >
+                Create
+              </button>
+              <button
+                class="btn btn-ghost btn-sm"
+                @click="screen_cfg.show_new = false"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body" style="padding: 0">
+            <!-- System screens (read-only) -->
+            <div class="screen-group-label">🔒 System Screens</div>
+            <div
+              v-for="s in screen_cfg.all_screens.filter((x) => x.system)"
+              :key="s.id"
+              class="screen-lib-row"
+            >
+              <span class="screen-lib-name">{{ s.name }}</span>
+              <span class="badge badge-info">System</span>
+            </div>
+
+            <!-- User screens -->
+            <div class="screen-group-label">👤 My Screens</div>
+            <div
+              v-if="!screen_cfg.all_screens.filter((x) => !x.system).length"
+              class="text-muted p-3"
+              style="font-size: 12px"
+            >
+              No user screens yet. Click + New Screen to create one.
+            </div>
+            <div
+              v-for="s in screen_cfg.all_screens.filter((x) => !x.system)"
+              :key="s.id"
+              class="screen-lib-row"
+            >
+              <span class="screen-lib-name">{{ s.name }}</span>
+              <div class="flex gap-2">
+                <button
+                  class="btn btn-danger btn-sm"
+                  @click="onDeleteUserScreen(s.id, s.name)"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current screen settings card (rename / background / LED / wallpaper) -->
+        <div class="card mt-3">
+          <div class="card-header">
+            Active Screen Settings —
+            <span class="text-accent">{{ screen?.name }}</span>
+          </div>
+          <div class="card-body">
             <div class="field-row">
-              <label class="field-label">Screen Name</label>
+              <label class="field-label">Name</label>
               <div class="field-value">
                 <input
                   class="ctrl"
@@ -799,19 +959,6 @@
                   v-model="edit_screen_name"
                   @input="onSetScreenName"
                 />
-              </div>
-            </div>
-            <div class="field-row">
-              <label class="field-label">Duration</label>
-              <div class="field-value flex gap-2" style="align-items: center">
-                <input
-                  class="ctrl ctrl-num"
-                  type="number"
-                  v-model.number="edit_duration"
-                  min="0"
-                  @input="onSetScreenDuration"
-                />
-                <span class="text-muted" style="font-size: 12px">ms</span>
               </div>
             </div>
             <div class="field-row">
@@ -1329,6 +1476,22 @@ export default {
       },
 
       screen_manage: { show: false, name: null, active: 0 },
+
+      screen_cfg: {
+        all_screens: [], // { id, name, system }
+        active: [
+          "system_status",
+          "network_charts",
+          "clock_date",
+          "storage_power",
+        ],
+        rotate: true,
+        interval_sec: 60,
+        show_new: false,
+        new_name: "",
+        new_bg: "#060a10",
+        saving: false,
+      },
 
       // app state
       config: null,
@@ -1928,6 +2091,111 @@ export default {
         this.screen.widgets.sort((a, b) => a.id - b.id);
         this.unsaved_changes = true;
       });
+    },
+
+    // ── Screen Management ─────────────────────────────────────────
+    loadScreenLibrary() {
+      fetch("/api/screens")
+        .then((r) => r.json())
+        .then((list) => {
+          this.screen_cfg.all_screens = list;
+          // Sync active from theme
+          if (this.theme?.active_screens) {
+            this.screen_cfg.active = [...this.theme.active_screens];
+            this.screen_cfg.rotate = this.theme.rotate !== false;
+            this.screen_cfg.interval_sec = Math.round(
+              (this.theme.rotation_interval || 60000) / 1000,
+            );
+          }
+        })
+        .catch(() => {});
+    },
+
+    onToggleScreenActive(id, checked) {
+      if (id === "system_status") return; // always on
+      if (checked) {
+        if (!this.screen_cfg.active.includes(id))
+          this.screen_cfg.active.push(id);
+      } else {
+        this.screen_cfg.active = this.screen_cfg.active.filter((x) => x !== id);
+      }
+    },
+
+    onSaveScreenRotation() {
+      this.screen_cfg.saving = true;
+      fetch("/api/theme/screens", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          active_screens: this.screen_cfg.active,
+          rotate: this.screen_cfg.rotate,
+          rotation_interval: this.screen_cfg.interval_sec * 1000,
+        }),
+      })
+        .then((r) => r.json())
+        .then((r) => {
+          if (r.ok && this.theme) {
+            this.theme.active_screens = r.active_screens;
+            this.theme.rotate = this.screen_cfg.rotate;
+            this.theme.rotation_interval = this.screen_cfg.interval_sec * 1000;
+          }
+          this.screen_cfg.saving = false;
+        })
+        .catch(() => {
+          this.screen_cfg.saving = false;
+        });
+    },
+
+    onCreateScreen() {
+      if (!this.screen_cfg.new_name) return;
+      fetch("/api/screens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: this.screen_cfg.new_name,
+          background: this.screen_cfg.new_bg,
+          widgets: [],
+        }),
+      })
+        .then((r) => r.json())
+        .then((r) => {
+          if (r.id) {
+            this.screen_cfg.all_screens.push({
+              id: r.id,
+              name: this.screen_cfg.new_name,
+              system: false,
+            });
+            this.screen_cfg.new_name = "";
+            this.screen_cfg.new_bg = "#060a10";
+            this.screen_cfg.show_new = false;
+          }
+        })
+        .catch(() => {});
+    },
+
+    onDeleteUserScreen(id, name) {
+      this.showConfirm({
+        header: "Delete Screen",
+        message: `Delete screen "${name}"? This cannot be undone.`,
+        acceptLabel: "Delete",
+      })
+        .then(() => {
+          fetch("/api/screens/" + id, { method: "DELETE" }).then(() => {
+            this.screen_cfg.all_screens = this.screen_cfg.all_screens.filter(
+              (s) => s.id !== id,
+            );
+            this.screen_cfg.active = this.screen_cfg.active.filter(
+              (x) => x !== id,
+            );
+          });
+        })
+        .catch(() => {});
+    },
+  },
+
+  watch: {
+    activeTab(tab) {
+      if (tab === "screens") this.loadScreenLibrary();
     },
   },
 };

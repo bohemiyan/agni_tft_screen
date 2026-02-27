@@ -1046,3 +1046,116 @@ input[type="color"].ctrl-color {
   border: 1px solid rgba(0, 212, 255, 0.3) !important;
   font-family: "Inter", sans-serif !important;
 }
+
+/* ── Screen Management UI ────────────────────────────────────── */
+
+/* Mode Toggle */
+.toggle-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.toggle-opt:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.toggle-opt.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Screen Checklist */
+.screen-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.screen-check-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+.screen-check-row:hover:not(.locked) {
+  background: var(--bg-hover);
+}
+.screen-check-row.locked {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+.screen-check-row input[type="checkbox"] {
+  margin-right: 12px;
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.screen-check-row.locked input[type="checkbox"] {
+  accent-color: var(--text-muted);
+  cursor: not-allowed;
+}
+.screen-check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.screen-check-row.locked .screen-check-label {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Badges */
+.badge-lock, .badge-user {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* Screen Library */
+.screen-group-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 12px 16px 8px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.screen-lib-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s ease;
+}
+.screen-lib-row:hover {
+  background: var(--bg-hover);
+}
+.screen-lib-row:last-child {
+  border-bottom: none;
+}
+.screen-lib-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}

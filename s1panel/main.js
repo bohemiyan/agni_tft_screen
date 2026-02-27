@@ -11,7 +11,7 @@ const path        = require('path');
 const http        = require('http');
 
 const express     = require('express');
-const node_canvas = require('canvas');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 
 const logger      = require('./logger');
 const api         = require('./api');
@@ -399,7 +399,7 @@ function load_wallpaper(context, state, config, screen) {
                 return fulfill(state.wallpaper_image);
             }
 
-            return node_canvas.loadImage(screen.wallpaper).then(image => {
+            return loadImage(screen.wallpaper).then(image => {
 
                 state.wallpaper_image = image;
 
@@ -657,7 +657,7 @@ function load_panel_font(font) {
 
             if (found) {
                 logger.info('initialize: register ' + _full_path + ' as ' + font.face.family);
-                node_canvas.registerFont(_full_path, font.face);
+                GlobalFonts.registerFromPath(_full_path, font.face.family);
             }
             else {
                 logger.info('initialize: ' + _full_path + ' not available for ' + font.face.family);
@@ -737,11 +737,30 @@ function main() {
 
         load_config(_theme_file).then(theme => {
 
+            const screens_mgr = require('./screens_manager');
+
+            // Load screen files referenced by active_screens (or fall back to inline screens)
+            const _screen_loader = theme.active_screens
+                ? screens_mgr.resolve_theme_screens(theme)
+                : Promise.resolve(theme.screens || []);
+
+            _screen_loader.then(resolved_screens => {
+
+                theme.screens = resolved_screens;
+
+                // Apply rotate/rotation_interval from theme to each screen's duration
+                if (theme.rotate && theme.rotation_interval) {
+                    theme.screens.forEach(s => { s.duration = theme.rotation_interval; });
+                } else if (theme.rotate === false) {
+                    // Only first screen (system_status) cycles — set others to 0
+                    theme.screens.forEach((s, i) => { s.duration = i === 0 ? 0 : 0; });
+                }
+
             register_fonts().then(() => {
 
-                const _output_canvas = node_canvas.createCanvas(config.canvas.width, config.canvas.height);
-                const _canvas1 = node_canvas.createCanvas(config.canvas.width, config.canvas.height).getContext('2d', { pixelFormat: config.canvas.pixel });
-                const _canvas2 = node_canvas.createCanvas(config.canvas.width, config.canvas.height).getContext('2d', { pixelFormat: config.canvas.pixel });
+                const _output_canvas = createCanvas(config.canvas.width, config.canvas.height);
+                const _canvas1 = createCanvas(config.canvas.width, config.canvas.height).getContext('2d');
+                const _canvas2 = createCanvas(config.canvas.width, config.canvas.height).getContext('2d');
 
                 const _state = {
 
@@ -811,6 +830,8 @@ function main() {
                     logger.error('initialization failed');
                 });
             });
+
+            }); // _screen_loader.then
 
         }, err => {
 
