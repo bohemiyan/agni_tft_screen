@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import time
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from .core.hardware.lcd import LCDDevice
 from .core.hardware.led import LEDDevice
 from .core.config import Config
@@ -78,6 +78,41 @@ class Worker:
         self.lcd.open()
         logger.info("Worker started")
         
+        # --- BOOT SEQUENCE ---
+        try:
+            # 1. Fire Rainbow LEDs
+            led_cfg = self.config.get("led_config", {})
+            device_path = led_cfg.get("device", "/dev/ttyUSB0")
+            asyncio.create_task(self.led.set_strip(1, 5, 3, device_path)) # Rainbow max intensity
+            
+            # 2. Draw "Welcome Chirag" Splash 
+            self.draw_context.rectangle([0, 0, self.canvas.width, self.canvas.height], fill="#060a10")
+            try:
+                # Try to load a nice large default font
+                font = ImageFont.truetype("arialbd.ttf", 24)
+            except IOError:
+                font = ImageFont.load_default()
+                
+            text = "Welcome...."
+            # use getbbox instead of textsize for newer Pillow versions
+            bbox = self.draw_context.textbbox((0, 0), text, font=font)
+            text_w = bbox[2] - bbox[0]
+            text_h = bbox[3] - bbox[1]
+            x = (self.canvas.width - text_w) / 2
+            y = (self.canvas.height - text_h) / 2
+            
+            self.draw_context.text((x, y), text, fill="#00d4ff", font=font)
+            
+            # 3. Push Splash to LCD
+            await self.lcd.redraw(self.canvas.tobytes())
+            
+            # 4. Hold Splash for 10 Seconds
+            await asyncio.sleep(10)
+            
+        except Exception as e:
+            logger.error(f"Failed to play Welcome sequence: {e}")
+        # --- END BOOT SEQUENCE ---
+
         while self.running:
             try:
                 # 1. Sample sensors
